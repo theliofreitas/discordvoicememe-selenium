@@ -1,4 +1,7 @@
-const { Builder, By, Key, until } = require("selenium-webdriver");
+const { Builder, By, until } = require("selenium-webdriver");
+const database = require('./src/database.js');
+const MemeAudio = require("./src/MemeAudio");
+
 require("dotenv").config();
 
 const LOGIN = process.env.MYINSTANTS_LOGIN;
@@ -21,37 +24,37 @@ async function start() {
 
   // Loop through sound elements
   const elements = await driver.findElements(By.css('.instant div.instant'));
-
-  const audioArray = [];
+  const memeAudioList = [];
 
   for (let index = 0; index < elements.length; index++) {
     let element = elements[index];
 
-    let audioLabel = await element.findElement(By.css('a.instant-link.link-secondary')).getText().then(function(value) {
+    // Get MemeAudio label from the DOM
+    let label = await element.findElement(By.css('a.instant-link.link-secondary')).getText().then(function(value) {
       return value;
     });
 
-    let audioUrl = await element.findElement(By.css('button.small-button')).getAttribute('onclick').then(function(value) {
+    // Get MemeAudio playUrl from the DOM
+    let playUrl = await element.findElement(By.css('button.small-button')).getAttribute('onclick').then(function(value) {
       let urlFormat = value.replace("play('", "");
       urlFormat = urlFormat.substr(0, urlFormat.length -2);
 
       return urlFormat;
     });
 
-    let buttonColor = await element.findElement(By.css('div.circle.small-button-background')).getCssValue('background-color').then(function(value) {
+    // Get MemeAudio color from the DOM
+    let color = await element.findElement(By.css('div.circle.small-button-background')).getCssValue('background-color').then(function(value) {
       return value;
     });
 
-    let audio = {
-      label: audioLabel,
-      url: audioUrl,
-      color: buttonColor,
-    };
+    // New instance of MemeAudio class
+    const memeAudio = new MemeAudio(label, playUrl, color);
 
-    audioArray.push(audio);
+    memeAudioList.push(memeAudio);
   }
 
-  console.log(audioArray);
+  // Insert the list of MemeAudio into the database
+  database.insertMemeAudio(memeAudioList);
 }
 
 function sleep(ms) {
