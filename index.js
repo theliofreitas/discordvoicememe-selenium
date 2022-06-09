@@ -6,6 +6,7 @@ require("dotenv").config();
 
 const LOGIN = process.env.MYINSTANTS_LOGIN;
 const PASSWORD = process.env.MYINSTANTS_PASSWORD;
+const BASE_URL = process.env.MYINSTANTS_URL;
 
 async function start() {
   let driver = await new Builder()
@@ -38,6 +39,7 @@ async function start() {
     let playUrl = await element.findElement(By.css('button.small-button')).getAttribute('onclick').then(function(value) {
       let urlFormat = value.replace("play('", "");
       urlFormat = urlFormat.substr(0, urlFormat.length -2);
+      urlFormat = BASE_URL + urlFormat;
 
       return urlFormat;
     });
